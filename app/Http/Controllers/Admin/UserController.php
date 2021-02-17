@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 use App\User;
 
 class UserController extends Controller
@@ -15,7 +17,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::paginate(10);
 
         return view('admin.users.index', ['users' => $users]);
     }
@@ -38,7 +40,36 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->only([
+            'name',
+            'email',
+            'password',
+            'password_confirmation'
+        ]);
+
+        $validator = Validator::make($data, [
+            'name' => ['string', 'required', 'max:100'],
+            'email' => ['string', 'required', 'email', 'max:100', 'unique:users'],
+            'password' => ['required', 'password', 'string', 'min:4', 'confirmed'],
+        ]);
+
+        if($validator->fails()) {
+
+            return redirect()->route('users.create')
+                              ->withErrors($validator)
+                              ->withInput();
+        }
+
+        $user = new User;
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->password = Hash::make($data['password']);
+
+        $user->save();
+
+        return redirect()->route('users.index');
+
     }
 
     /**

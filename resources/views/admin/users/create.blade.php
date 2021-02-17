@@ -7,41 +7,48 @@
 @endsection
 
 @section('content')
-    <form class="form-orizontal" action="{{ route('users.store') }}" method="POST">
-        <div class="form-group">
-            <div class="row">
-                <label for="name" class="control-label col-sm-2">Nome Completo</label>
-                <input type="text" class="form-control col-sm-10" name="name">
-            </div>
-        </div>
 
-        <div class="form-group">
-            <div class="row">
-                <label for="email" class="control-label col-sm-2">Email</label>
-                <input type="email" class="form-control col-sm-10" name="email">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="row">
-                <label for="password" class="control-label col-sm-2">Senha</label>
-                <input type="password" class="form-control col-sm-10" name="password">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="row">
-                <label for="password_confirmation" class="control-label col-sm-2">Confirme a senha</label>
-                <input type="password" class="form-control col-sm-10" name="password_confirmation">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="row">
-                <label for="" class="control-label col-sm-2"></label>
-                <div class="col-sm-10">
-                    <input type="submit" class="btn btn-md btn-success" value="Criar Usuário">
+    @if($errors->any())
+        @if(count($errors) == 1)
+            <h4>Ocorreu um erro.</h4>
+        @elseif(count($errors) > 1)
+            <h4>Ocorreram erros.</h4>
+        @endif
+        <ul>
+            @foreach($errors->all() as $error)
+                <div class="alert alert-danger">
+                    <li>{{ $error }}</li>       
                 </div>
+            @endforeach
+        </ul>
+    @endif
+
+    <form class="form-orizontal" action="{{ route('users.store') }}" method="POST">
+        @csrf
+        <div class="form-group row">
+            <label for="name" class="col-form-label col-sm-2">Nome Completo</label>
+            <input type="text" class="form-control col-sm-10 @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}">
+        </div>
+
+        <div class="form-group row">
+            <label for="email" class="col-form-label col-sm-2">Email</label>
+            <input type="email" class="form-control col-sm-10 @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}">
+        </div>
+
+        <div class="form-group row">
+            <label for="password" class="col-form-label col-sm-2">Senha</label>
+            <input type="password" class="form-control col-sm-10 @error('password') is-invalid @enderror" name="password">
+        </div>
+
+        <div class="form-group row">
+            <label for="password_confirmation" class="col-form-label col-sm-2">Confirme a senha</label>
+            <input type="password" class="form-control col-sm-10 @error('password_confirmation') is-invalid @enderror" name="password_confirmation">
+        </div>
+
+        <div class="form-group row">
+            <label for="" class="col-form-label col-sm-2"></label>
+            <div class="col-sm-10">
+                <input type="submit" class="btn btn-md btn-success" value="Criar Usuário">
             </div>
         </div>
     </form>
