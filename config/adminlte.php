@@ -252,6 +252,7 @@ return [
             'text'        => 'Meus Usuários',
             'url'         => 'painel/users',
             'icon'        => 'far fa-fw fa-file',
+            'can'         => 'edit-users'
             // 'label'       => 4,
             // 'label_color' => 'success',
         ],
