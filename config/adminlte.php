@@ -258,10 +258,15 @@ return [
         ],
         ['header' => 'account_settings'],
         [
-            'text' => 'profile',
-            'url'  => 'admin/settings',
-            'icon' => 'fas fa-fw fa-user',
+            'text' => 'Meu perfil',
+            'url'  => 'painel/profile',
+            'icon' => 'far fa-fw fa-user' 
         ],
+        [
+            'text' => 'Configurações',
+            'url'  => 'painel/settings',
+            'icon' => 'far fa-fw fa-file'
+        ]
         // [
         //     'text' => 'change_password',
         //     'url'  => 'admin/settings',

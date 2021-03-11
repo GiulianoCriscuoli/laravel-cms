@@ -70,8 +70,8 @@ class UserController extends Controller
         if($validator->fails()) {
 
             return redirect()->route('users.create')
-                              ->withErrors($validator)
-                              ->withInput();
+                            ->withErrors($validator)
+                            ->withInput();
         }
 
         $user = new User;
@@ -135,15 +135,14 @@ class UserController extends Controller
                 'password',
                 'password_confirmation'
             ]);
-
-            // valida as informações recebidas pkr request
+            // valida as informações recebidas por request
 
             $validator = Validator::make([
                 'name' => $data['name'],
                 'email' => $data['email']
             ], [
-                'name' => ['required', 'string', 'max:100'],
-                'email' => ['required', 'email', 'string', 'max:100', 'unique:users']
+                'name' => ['string', 'max:100'],
+                'email' => ['email', 'string', 'max:100']
             ]);
 
             // se falhar, redireciona o id com os validators
@@ -157,27 +156,14 @@ class UserController extends Controller
 
             // alterações 
 
-            $user->name = $data['name'];
+            if($request->has('name')) {
+                $user->name = $data['name'];
+            } 
 
-            if($user->email !== $data['email']) {
-
-                $hasEmail = User::where('email', $data['email'])->get();
-
-                if(count($hasEmail) === 0) {
-
-                    $user->email = $data['email']; 
-
-                } else {
-
-                    $validator->errors()->add('email', 'Email Já existente!');
-
-                    return redirect()->route('users.edit', ['user' => $id]);
-                }
-            } else {
-
-                $validator->errors()->add('email', 'Este email não pode ser atualizado!');
+            if($request->has('email')) {
+                $user->email = $data['email'];
             }
-            
+           
             if(!empty($data['password'])) {
 
                 if(strlen($data['password']) >= 4) {
@@ -195,9 +181,8 @@ class UserController extends Controller
                         ]));
                     }                       
                 }
-
-                $user->save();
             }
+            $user->update($data);
         }
 
         return redirect()->route('users.index');
