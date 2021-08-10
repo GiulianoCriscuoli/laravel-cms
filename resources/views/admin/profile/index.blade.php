@@ -26,14 +26,14 @@
 @if(session('warning'))
     <div class="alert alert-info">
         <ul>
-            <li>{{ session('warning') }}</li>
+            <li style="list-style: none;">{{ session('warning') }}</li>
         </ul>
     </div>
 @endif
 
 <form class="form-orizontal" action="{{ route('profile.save') }}" method="POST">
-@method('PUT')
-@csrf
+    @csrf
+    @method('PUT')
 <div class="form-group row">
     <label for="name" class="col-form-label col-sm-2">Nome Completo</label>
     <input type="text" class="form-control col-sm-10 @error('name') is-invalid @enderror" name="name" value="{{ $user->name }}">

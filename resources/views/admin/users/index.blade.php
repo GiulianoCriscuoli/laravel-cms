@@ -10,6 +10,10 @@
 @endsection
 
 @section('content')
+
+    @if(session('success'))
+       <div class="alert alert-success">{{ session('success') }}</div> 
+    @endif
     <table class="table table-hover">
         <thead>
             <tr>
@@ -30,7 +34,7 @@
                         <a href="{{ route('users.edit', ['user' => $user->id]) }}" class="btn btn-sm btn-primary">Editar</a>
                         @if (intval($isLogged) !== $user->id)
                             <form class="d-inline-flex" action="{{ route('users.destroy', ['user' => $user->id]) }}" onsubmit="return confirm('Certeza que deseja excluir?')" method="POST">
-                                @csrf
+                            @csrf
                             @method('DELETE')
                             
                             <button type="submit" class="btn btn-sm btn-danger">Excluir</button>

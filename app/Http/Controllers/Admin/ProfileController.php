@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\support\Facades\Hash;
 use App\User;
 
 class ProfileController extends Controller
@@ -35,80 +36,64 @@ class ProfileController extends Controller
 
     public function save(Request $request) {
 
-    $data = $request->only([
-        'name',
-        'email',
-        'password',
-        'password_confirmation' 
-    ]);
-    
-    $validator = Validator::make([
-
-        $data['name'] = $request->name,
-        $data['email'] = $request->email
-    ],[
-        'name' => ['required', 'string', 'max:255'],
-        'email' => ['required', 'email', 'max:255', 'string']
-    ]);
-
-    $isLogged = intval(Auth::id());
+    $isLogged = intVal(Auth::id());
 
     $user = User::findOrFail($isLogged);
 
+    // verifica se existe usuário
+
     if($user) {
+        $data = $request->only([
+            'name',
+            'email',
+            'password',
+            'password_confirmation'
+        ]);
+        
+        // valida as informações recebidas por request
+
+        $validator = Validator::make([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password']
+        ], [
+            'name' => ['string', 'max:100'],
+            'email' => ['email', 'string', 'max:100'],
+            'password' => ['min:4', 'password', 'string', 'confirmed']
+        ]);
+
+        dd($validator->fails());
+
+        // se falhar, redireciona o id com os validators
 
         if($validator->fails()) {
 
-            return redirect()->route('profile.save')->withErrors($validator);
+            return redirect()->back()
+                ->withErrors($validator);
         }
 
         // alterações 
 
-        $user->name = $data['name'];
+        if($request->has('name')) {
 
-        if($user->email !== $data['email']) {
+            $user->name = $data['name'];
+        } 
 
-            $hasEmail = User::where('email', $data['email'])->get();
-
-            if(count($hasEmail) === 0) {
-
-                $user->email = $data['email']; 
-
-            } else {
-
-                $validator->errors()->add('email', 'Email Já existente!');
-
-                return redirect()->route('profile.index');
-            }
-        } else {
-
-            $validator->errors()->add('email', 'Este email não pode ser atualizado!');
+        if($request->has('email')) {
+            $user->email = $data['email'];
         }
         
-        if(!empty($data['password'])) {
-
-            if(strlen($data['password']) >= 4) {
-                
-                if($data['password'] === $data['password_confirmation']) {
-                    
-                    $user->password = Hash::make($data['password']);
-
-                } else {
-
-                    $validator->errors()->add('password', __('validation.min.string',[
-                        
-                        'attribute' => 'password',
-                        'min' => 4
-                    ]));
-                }                       
-            }
-            $user->save();
-
-            return redirect()->route('profile')
-                             ->with('warning', 'Perfil modificado com sucesso!');
+        if($data['password'] == $data['password_confirmation']) {
+            $user->password = Hash::make($data['password']);
         }
-    }
+                
+        $user->update($data);
 
-    return redirect()->route('users.index');
+        return redirect()->route('users.index')->with('success', 'Editado o perfil com sucesso!');
+
+        }
+
+        return redirect()->route('users.index');
+
     }
 }

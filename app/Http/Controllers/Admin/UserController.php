@@ -16,7 +16,6 @@ class UserController extends Controller
     {   
         $this->middleware('auth');
         $this->middleware('can:edit-users');
-
     }
 
     /**
@@ -64,7 +63,7 @@ class UserController extends Controller
         $validator = Validator::make($data, [
             'name' => ['string', 'required', 'max:100'],
             'email' => ['string', 'required', 'email', 'max:100', 'unique:users'],
-            'password' => ['required', 'password', 'string', 'min:4', 'confirmed'],
+            'password' => ['required', 'string', 'min:4', 'confirmed'],
         ]);
 
         if($validator->fails()) {
@@ -72,18 +71,18 @@ class UserController extends Controller
             return redirect()->route('users.create')
                             ->withErrors($validator)
                             ->withInput();
-        }
+        } else {
 
-        $user = new User;
+            $user = new User;
 
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->password = Hash::make($data['password']);
-
-        $user->save();
-
-        return redirect()->route('users.index');
-
+            $user->name = $data['name'];
+            $user->email = $data['email'];
+            $user->password = Hash::make($data['password']);
+    
+            $user->save();
+    
+            return redirect()->route('users.index');
+        }   
     }
 
     /**
@@ -126,66 +125,81 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // verifica se existe usuário
-
         if($user) {
+
             $data = $request->only([
                 'name',
                 'email',
                 'password',
                 'password_confirmation'
             ]);
-            // valida as informações recebidas por request
 
             $validator = Validator::make([
                 'name' => $data['name'],
                 'email' => $data['email']
-            ], [
-                'name' => ['string', 'max:100'],
-                'email' => ['email', 'string', 'max:100']
+            ],
+            [
+                'name' => ['required', 'string', 'max:100'],
+                'email' => ['required', 'email', 'max:100', 'string']
             ]);
 
-            // se falhar, redireciona o id com os validators
-
             if($validator->fails()) {
+                return redirect()->route('users.edit', [
+                'user' => $id])->withErrors($validator);
+            }
 
+            $user->name = $data['name'];
+
+            if($user->email != $data['email']) {
+
+                $hasEmail = User::where('email', $data['email'])->get();
+                
+                if(count($hasEmail) == 0) {
+                    
+                    $user->email = $data['email'];
+                } else {
+                    
+                    $validator->errors()->add('email', __('validation.unique', [
+                        'attribute' => 'email'
+                    ]));
+                }
+            }
+
+            if(!empty($data['password'])) {
+
+                if(strlen($data['password']) > 4) {
+                    if($data['password'] === $data['password_confirmation']) {
+
+                        $user->password = Hash::make($data['password']);
+                    } else {
+                        $validator->errors()->add('password', __('validation.confirmed', [
+                            'attribute' => 'password'
+                        ]));
+                    }
+                } else {
+                    $validator->errors()->add('password', __('validation.min.string', [
+                        'attribute' => 'password',
+                        'min' => 4
+                    ]));
+                }
+            } else {
+                $validator->errors()->add('password', __('validation.required', [
+                    'attribute' => 'password'
+                ]));
+            }
+            
+            if(count($validator->errors()) > 0) {
                 return redirect()->route('users.edit', [
                     'user' => $id
                 ])->withErrors($validator);
             }
 
-            // alterações 
-
-            if($request->has('name')) {
-                $user->name = $data['name'];
-            } 
-
-            if($request->has('email')) {
-                $user->email = $data['email'];
-            }
-           
-            if(!empty($data['password'])) {
-
-                if(strlen($data['password']) >= 4) {
-                    
-                    if($data['password'] === $data['password_confirmation']) {
-                        
-                        $user->password = Hash::make($data['password']);
-
-                    } else {
-
-                        $validator->errors()->add('password', __('validation.min.string',[
-                            
-                            'attribute' => 'password',
-                            'min' => 4
-                        ]));
-                    }                       
-                }
-            }
-            $user->update($data);
+            $user->save();
         }
 
-        return redirect()->route('users.index');
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'Usuário editado com sucesso!');
     }
 
     /**
