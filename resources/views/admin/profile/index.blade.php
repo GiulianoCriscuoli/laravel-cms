@@ -23,10 +23,10 @@
 </ul>
 @endif
 
-@if(session('warning'))
-    <div class="alert alert-info">
+@if(session('success'))
+    <div class="alert alert-success">
         <ul>
-            <li style="list-style: none;">{{ session('warning') }}</li>
+            <li style="list-style: none;">{{ session('success') }}</li>
         </ul>
     </div>
 @endif

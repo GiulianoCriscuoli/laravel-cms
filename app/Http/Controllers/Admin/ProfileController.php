@@ -55,20 +55,17 @@ class ProfileController extends Controller
         $validator = Validator::make([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => $data['password']
-        ], [
+        ], 
+        [
             'name' => ['string', 'max:100'],
-            'email' => ['email', 'string', 'max:100'],
-            'password' => ['min:4', 'password', 'string', 'confirmed']
+            'email' => ['email', 'string', 'max:100']
         ]);
-
-        dd($validator->fails());
 
         // se falhar, redireciona o id com os validators
 
         if($validator->fails()) {
 
-            return redirect()->back()
+            return redirect()->route('profile.index')
                 ->withErrors($validator);
         }
 
@@ -82,18 +79,47 @@ class ProfileController extends Controller
         if($request->has('email')) {
             $user->email = $data['email'];
         }
+
+        if(!isset($data['password'])) {
+
+            $validator->errors()->add('password', __('validation.required', [
+                'attribute' => 'password'
+
+            ]));
+        }
         
         if($data['password'] == $data['password_confirmation']) {
-            $user->password = Hash::make($data['password']);
+            
+            if(strlen($data['password']) >= 4) {
+                $user->password = Hash::make($data['password']);
+
+            }  else {
+
+                $validator->errors()->add('password', __('validation.min:4.string', [
+                    'attribute' => 'password',
+                    'min' => 4
+                ]));
+            }
+        } else {
+
+            $validator->errors()->add('password', __('validation.confirmed', [
+                'attribute' => 'password'
+            ]));
+        }
+
+        if(count($validator->errors()) > 0) {
+            return redirect()
+                    ->back()
+                    ->withErrors($validator);
         }
                 
         $user->update($data);
 
-        return redirect()->route('users.index')->with('success', 'Editado o perfil com sucesso!');
+        return redirect()->route('profile.index')->with('success', 'Editado o perfil com sucesso!');
 
         }
 
-        return redirect()->route('users.index');
+        return redirect()->route('profile.index');
 
     }
 }
