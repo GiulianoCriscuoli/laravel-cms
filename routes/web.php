@@ -28,6 +28,7 @@ Route::prefix('painel')->group(function(){
     Route::post('logout', 'Admin\Auth\LoginController@logout')->name('logout');
 
     Route::resource('users', 'Admin\UserController');
+    Route::resource('pages', 'Admin\PagesController');
 
     Route::get('profile', 'Admin\ProfileController@index')->name('profile.index');
     Route::put('profile/save', 'Admin\ProfileController@save')->name('profile.save');
