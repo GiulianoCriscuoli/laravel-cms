@@ -51,8 +51,14 @@
             selector:'textarea.bodyfield',
             height:300,
             menubar:false,
-            plugins:['link', 'table', 'lists', 'autoresizes'],
-            toolbar: 'undo redo | link image | bold italic backcolor | alignleft aligncenter alignright alignjustify | table | paragraph'
+            plugins:['link', 'table', 'lists', 'autoresizes', 'image'],
+            toolbar: 'undo redo | link image | bold italic backcolor | alignleft aligncenter alignright alignjustify | table | paragraph',
+            content_css: [
+                '{{asset('css/assets/content.css')}}'
+            ],
+            images_upload_url: '{{ route('imageupload') }}',
+            images_upload_credentials: true,
+            convert_urls: false
         });
         
     </script>
